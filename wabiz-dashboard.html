@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WABIZ — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111;
+    --surface2: #161616;
+    --border: #1e1e1e;
+    --border2: #2a2a2a;
+    --green: #00ff87;
+    --green-dim: rgba(0,255,135,0.08);
+    --green-glow: rgba(0,255,135,0.15);
+    --red: #ff4545;
+    --yellow: #ffc107;
+    --blue: #40c4ff;
+    --text: #e0e0e0;
+    --muted: #444;
+    --muted2: #666;
+    --mono: 'DM Mono', monospace;
+    --display: 'Clash Display', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ─── LOGIN SCREEN ─── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  #login-screen::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0,255,135,0.06) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .login-box {
+    width: 380px;
+    padding: 48px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    position: relative;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+  }
+
+  .login-logo {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .login-logo span { color: var(--green); }
+
+  .login-sub {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus {
+    border-color: var(--green);
+  }
+
+  .field input::placeholder { color: var(--muted); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--green);
+    color: #000;
+    border: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .login-error {
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* ─── MAIN APP ─── */
+  #app {
+    display: none;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo h1 {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .sidebar-logo h1 span { color: var(--green); }
+
+  .sidebar-logo p {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav {
+    flex: 1;
+    padding: 16px 0;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 24px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+    text-transform: uppercase;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+
+  .nav-item.active {
+    color: var(--green);
+    border-left-color: var(--green);
+    background: var(--green-dim);
+  }
+
+  .nav-icon { font-size: 14px; width: 16px; text-align: center; }
+
+  .sidebar-bottom {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--muted2);
+    text-transform: uppercase;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: blink 2s infinite;
+  }
+
+  .dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: 220px;
+    min-height: 100vh;
+    padding: 40px;
+  }
+
+  .page { display: none; animation: fadeUp 0.3s ease both; }
+  .page.active { display: block; }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .page-title {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .page-sub {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .stat-card:hover { border-color: var(--border2); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .stat-card:hover::before { opacity: 1; }
+
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .stat-value {
+    font-family: var(--display);
+    font-size: 32px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--red); }
+
+  .stat-change {
+    font-size: 10px;
+    color: var(--muted2);
+    margin-top: 6px;
+  }
+
+  /* BOT STATUS CARD */
+  .bot-status-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .bot-info h3 {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .bot-info p {
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: 1px;
+  }
+
+  .bot-actions { display: flex; gap: 12px; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-green { border-color: var(--green); color: var(--green); background: transparent; }
+  .btn-green:hover { background: var(--green); color: #000; }
+
+  .btn-red { border-color: var(--red); color: var(--red); background: transparent; }
+  .btn-red:hover { background: var(--red); color: #fff; }
+
+  .btn-ghost { border-color: var(--border2); color: var(--muted2); background: transparent; }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  /* QR CODE */
+  .qr-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    text-align: center;
+    max-width: 360px;
+  }
+
+  .qr-placeholder {
+    width: 200px;
+    height: 200px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+  }
+
+  #qr-image {
+    width: 200px;
+    height: 200px;
+    display: none;
+  }
+
+  .qr-text {
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: 1px;
+    line-height: 1.8;
+  }
+
+  /* CONFIG FORM */
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .config-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+  }
+
+  .config-card h3 {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus { border-color: var(--green); }
+
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color: var(--muted); }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toggle-row:last-child { border-bottom: none; }
+
+  .toggle-label {
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .toggle-sub {
+    font-size: 10px;
+    color: var(--muted2);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .toggle {
+    width: 40px;
+    height: 22px;
+    background: var(--border2);
+    border-radius: 11px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+
+  .toggle.on { background: var(--green); }
+
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.3s;
+  }
+
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* RULES */
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+
+  .rule-item {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .rule-item .rule-trigger {
+    font-size: 11px;
+    color: var(--green);
+    font-weight: 500;
+    min-width: 80px;
+  }
+
+  .rule-item .rule-response {
+    font-size: 11px;
+    color: var(--muted2);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rule-delete {
+    font-size: 14px;
+    color: var(--muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s;
+  }
+
+  .rule-delete:hover { color: var(--red); }
+
+  .add-rule-form {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 8px;
+  }
+
+  .add-rule-form input {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .add-rule-form input:focus { border-color: var(--green); }
+  .add-rule-form input::placeholder { color: var(--muted); }
+
+  .btn-add {
+    background: var(--green);
+    color: #000;
+    border: none;
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .btn-add:hover { opacity: 0.8; }
+
+  /* LOGS */
+  .logs-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .logs-header {
+    display: grid;
+    grid-template-columns: 140px 120px 1fr 1fr 80px;
+    gap: 0;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  .log-row {
+    display: grid;
+    grid-template-columns: 140px 120px 1fr 1fr 80px;
+    gap: 0;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    transition: background 0.2s;
+  }
+
+  .log-row:hover { background: var(--surface2); }
+  .log-row:last-child { border-bottom: none; }
+
+  .log-row .time { color: var(--muted2); font-size: 10px; }
+  .log-row .contact { color: var(--blue); }
+  .log-row .incoming { color: var(--muted2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
+  .log-row .outgoing { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px; }
+
+  .type-badge {
+    font-size: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    width: fit-content;
+  }
+
+  .type-badge.rule { background: rgba(0,255,135,0.1); color: var(--green); border: 1px solid rgba(0,255,135,0.2); }
+  .type-badge.ai { background: rgba(64,196,255,0.1); color: var(--blue); border: 1px solid rgba(64,196,255,0.2); }
+  .type-badge.welcome { background: rgba(255,193,7,0.1); color: var(--yellow); border: 1px solid rgba(255,193,7,0.2); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--green);
+    padding: 14px 20px;
+    font-size: 12px;
+    color: var(--text);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+    max-width: 300px;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-left-color: var(--red); }
+
+  /* LOADING */
+  .loading {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted2);
+  }
+
+  .empty .empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.3; }
+  .empty p { font-size: 12px; letter-spacing: 1px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; }
+    .sidebar-logo, .nav-item span, .sidebar-bottom .status-dot span { display: none; }
+    .nav-item { padding: 14px; justify-content: center; }
+    .nav-icon { width: auto; }
+    .main { margin-left: 60px; padding: 20px; }
+    .config-grid { grid-template-columns: 1fr; }
+    .logs-header, .log-row { grid-template-columns: 1fr 1fr; }
+    .logs-header > *:nth-child(n+3),
+    .log-row > *:nth-child(n+3) { display: none; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">WA<span>BIZ</span></div>
+    <div class="login-sub">WhatsApp Automation Platform</div>
+    <div class="field">
+      <label>Clé API</label>
+      <input type="password" id="api-key-input" placeholder="sk_••••••••••••••••" />
+    </div>
+    <button class="btn-primary" onclick="login()">ACCÉDER AU DASHBOARD</button>
+    <div class="login-error" id="login-error">Clé API invalide. Vérifiez vos accès.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>WA<span>BIZ</span></h1>
+      <p>Bot Dashboard</p>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="showPage('overview')">
+        <span class="nav-icon">◈</span>
+        <span>Overview</span>
+      </div>
+      <div class="nav-item" onclick="showPage('connection')">
+        <span class="nav-icon">◎</span>
+        <span>Connexion</span>
+      </div>
+      <div class="nav-item" onclick="showPage('config')">
+        <span class="nav-icon">◧</span>
+        <span>Configuration</span>
+      </div>
+      <div class="nav-item" onclick="showPage('logs')">
+        <span class="nav-icon">≡</span>
+        <span>Logs</span>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="status-dot">
+        <div class="dot" id="sidebar-dot"></div>
+        <span id="sidebar-status">Hors ligne</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- OVERVIEW PAGE -->
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Vue d'ensemble</div>
+          <div class="page-sub">Tableau de bord principal</div>
+        </div>
+        <button class="btn btn-ghost" onclick="refreshAll()">↻ Actualiser</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Statut Bot</div>
+          <div class="stat-value green" id="stat-status">—</div>
+          <div class="stat-change">État de la connexion WhatsApp</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Messages reçus</div>
+          <div class="stat-value" id="stat-received">—</div>
+          <div class="stat-change">Total tous types</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Réponses auto</div>
+          <div class="stat-value green" id="stat-auto">—</div>
+          <div class="stat-change">Règles déclenchées</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Réponses IA</div>
+          <div class="stat-value" id="stat-ai">—</div>
+          <div class="stat-change">Générations Groq</div>
+        </div>
+      </div>
+
+      <div class="bot-status-card">
+        <div class="bot-info">
+          <h3>WhatsApp Bot</h3>
+          <p id="bot-status-text">Vérification du statut...</p>
+        </div>
+        <div class="bot-actions">
+          <button class="btn btn-green" onclick="startBot()">▶ Démarrer</button>
+          <button class="btn btn-red" onclick="stopBot()">■ Arrêter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTION PAGE -->
+    <div class="page" id="page-connection">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Connexion WhatsApp</div>
+          <div class="page-sub">Scanner le QR code pour connecter</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;">
+        <div class="qr-container">
+          <div class="qr-placeholder" id="qr-placeholder">📱</div>
+          <img id="qr-image" alt="QR Code" />
+          <div class="qr-text" id="qr-text">
+            Cliquez sur "Démarrer le bot"<br>
+            puis scannez le QR code<br>
+            avec WhatsApp
+          </div>
+          <button class="btn btn-green" style="width:100%;margin-top:20px;" onclick="checkQR()">
+            ↻ Vérifier le QR
+          </button>
+        </div>
+
+        <div style="flex:1;min-width:260px;">
+          <div class="config-card">
+            <h3>Instructions</h3>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="color:var(--green);font-size:18px;flex-shrink:0;">①</div>
+                <div>
+                  <div style="font-size:12px;color:var(--text);margin-bottom:4px;">Démarrer le bot</div>
+                  <div style="font-size:11px;color:var(--muted2);">Cliquez sur "Démarrer" dans l'onglet Overview</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="color:var(--green);font-size:18px;flex-shrink:0;">②</div>
+                <div>
+                  <div style="font-size:12px;color:var(--text);margin-bottom:4px;">Ouvrir WhatsApp</div>
+                  <div style="font-size:11px;color:var(--muted2);">Menu → Appareils connectés → Connecter un appareil</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="color:var(--green);font-size:18px;flex-shrink:0;">③</div>
+                <div>
+                  <div style="font-size:12px;color:var(--text);margin-bottom:4px;">Scanner le QR</div>
+                  <div style="font-size:11px;color:var(--muted2);">Pointez votre téléphone vers le QR code</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="color:var(--green);font-size:18px;flex-shrink:0;">④</div>
+                <div>
+                  <div style="font-size:12px;color:var(--text);margin-bottom:4px;">C'est tout !</div>
+                  <div style="font-size:11px;color:var(--muted2);">Votre bot est maintenant actif 24h/24</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG PAGE -->
+    <div class="page" id="page-config">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configuration</div>
+          <div class="page-sub">Paramètres du bot</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveConfig()">↳ Sauvegarder</button>
+      </div>
+
+      <div class="config-grid">
+        <!-- Messages -->
+        <div class="config-card">
+          <h3>Messages automatiques</h3>
+          <div class="form-group">
+            <label>Message de bienvenue</label>
+            <textarea id="welcome-msg" rows="4" placeholder="Bonjour ! Bienvenue. Comment puis-je vous aider ?"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Message hors ligne</label>
+            <textarea id="offline-msg" rows="3" placeholder="Nous sommes actuellement indisponibles..."></textarea>
+          </div>
+        </div>
+
+        <!-- IA -->
+        <div class="config-card">
+          <h3>Intelligence artificielle</h3>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Activer l'IA</div>
+              <div class="toggle-sub">Réponses Groq / Llama 3.3</div>
+            </div>
+            <div class="toggle" id="ai-toggle" onclick="toggleAI()"></div>
+          </div>
+          <div class="form-group" style="margin-top:18px;">
+            <label>Contexte / Personnalité</label>
+            <textarea id="ai-context" rows="5" placeholder="Tu es un assistant professionnel pour [nom boutique]. Tu réponds en français de façon courtoise..."></textarea>
+          </div>
+        </div>
+
+        <!-- Règles -->
+        <div class="config-card" style="grid-column:1/-1;">
+          <h3>Règles de réponse automatique</h3>
+          <div class="rules-list" id="rules-list">
+            <div class="empty">
+              <div class="empty-icon">⌀</div>
+              <p>Aucune règle configurée</p>
+            </div>
+          </div>
+          <div class="add-rule-form">
+            <input type="text" id="new-trigger" placeholder="Déclencheur (ex: prix)" />
+            <input type="text" id="new-response" placeholder="Réponse automatique" />
+            <button class="btn-add" onclick="addRule()">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS PAGE -->
+    <div class="page" id="page-logs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Journaux</div>
+          <div class="page-sub">Historique des conversations</div>
+        </div>
+        <button class="btn btn-ghost" onclick="loadLogs()">↻ Actualiser</button>
+      </div>
+
+      <div class="logs-table">
+        <div class="logs-header">
+          <div>Heure</div>
+          <div>Contact</div>
+          <div>Message reçu</div>
+          <div>Réponse envoyée</div>
+          <div>Type</div>
+        </div>
+        <div id="logs-body">
+          <div class="empty">
+            <div class="empty-icon">≡</div>
+            <p>Aucun message pour l'instant</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─── CONFIG ───
+  const API_BASE = 'https://wabiz-whatsapp-saas-mvp-production.up.railway.app'
+  let apiKey = ''
+  let aiEnabled = false
+  let rules = []
+  let botStatus = 'offline'
+
+  // ─── AUTH ───
+  async function login() {
+    const key = document.getElementById('api-key-input').value.trim()
+    if (!key) return
+
+    try {
+      const res = await fetch(`${API_BASE}/auth?key=${encodeURIComponent(key)}`)
+
+      if (res.ok) {
+        apiKey = key
+        localStorage.setItem('wabiz_key', key)
+        document.getElementById('login-screen').style.display = 'none'
+        document.getElementById('app').style.display = 'block'
+        initApp()
+      } else {
+        document.getElementById('login-error').style.display = 'block'
+      }
+    } catch(e) {
+      document.getElementById('login-error').style.display = 'block'
+    }
+  }
+
+  // ─── INIT ───
+  async function initApp() {
+    await refreshAll()
+    await loadConfig()
+    await loadLogs()
+  }
+
+  // ─── NAVIGATION ───
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+    document.getElementById(`page-${name}`).classList.add('active')
+    event.currentTarget.classList.add('active')
+
+    if (name === 'logs') loadLogs()
+    if (name === 'connection') checkQR()
+  }
+
+  // ─── BOT STATUS ───
+  async function refreshAll() {
+    try {
+      const res = await fetch(`${API_BASE}/bot/status`, {
+        headers: { 'x-api-key': apiKey }
+      })
+      const data = await res.json()
+      botStatus = data.status || 'offline'
+      updateStatusUI(botStatus)
+
+      if (data.qr_code) showQR(data.qr_code)
+    } catch(e) {
+      updateStatusUI('offline')
+    }
+
+    await loadStats()
+  }
+
+  function updateStatusUI(status) {
+    const dot = document.getElementById('sidebar-dot')
+    const statusText = document.getElementById('sidebar-status')
+    const statStatus = document.getElementById('stat-status')
+    const botStatusText = document.getElementById('bot-status-text')
+
+    const labels = {
+      connected: 'En ligne',
+      connecting: 'Connexion...',
+      awaiting_scan: 'Scan requis',
+      offline: 'Hors ligne',
+      disconnected: 'Déconnecté'
+    }
+
+    const label = labels[status] || status
+
+    if (status === 'connected') {
+      dot.classList.remove('offline')
+      statStatus.textContent = 'Connecté'
+      statStatus.className = 'stat-value green'
+    } else {
+      dot.classList.add('offline')
+      statStatus.textContent = label
+      statStatus.className = 'stat-value red'
+    }
+
+    statusText.textContent = label
+    botStatusText.textContent = `Statut actuel : ${label}`
+  }
+
+  async function loadStats() {
+    try {
+      const res = await fetch(`${API_BASE}/bot/logs`, {
+        headers: { 'x-api-key': apiKey }
+      })
+      const logs = await res.json()
+
+      document.getElementById('stat-received').textContent = logs.length
+      document.getElementById('stat-auto').textContent = logs.filter(l => l.type === 'rule').length
+      document.getElementById('stat-ai').textContent = logs.filter(l => l.type === 'ai').length
+    } catch(e) {
+      document.getElementById('stat-received').textContent = '—'
+    }
+  }
+
+  // ─── BOT CONTROL ───
+  async function startBot() {
+    showToast('Démarrage du bot...')
+    try {
+      const res = await fetch(`${API_BASE}/bot/start`, {
+        method: 'POST',
+        headers: { 'x-api-key': apiKey }
+      })
+      const data = await res.json()
+      showToast(`Bot : ${data.status}`)
+      setTimeout(refreshAll, 2000)
+    } catch(e) {
+      showToast('Erreur de connexion', true)
+    }
+  }
+
+  async function stopBot() {
+    try {
+      await fetch(`${API_BASE}/bot/stop`, {
+        method: 'POST',
+        headers: { 'x-api-key': apiKey }
+      })
+      showToast('Bot arrêté')
+      setTimeout(refreshAll, 1000)
+    } catch(e) {
+      showToast('Erreur', true)
+    }
+  }
+
+  // ─── QR ───
+  async function checkQR() {
+    try {
+      const res = await fetch(`${API_BASE}/bot/status`, {
+        headers: { 'x-api-key': apiKey }
+      })
+      const data = await res.json()
+      if (data.qr_code) {
+        showQR(data.qr_code)
+      } else {
+        document.getElementById('qr-text').textContent =
+          botStatus === 'connected'
+            ? '✓ Bot connecté ! Aucun QR nécessaire.'
+            : 'Démarrez le bot pour générer un QR code.'
+      }
+    } catch(e) {}
+  }
+
+  function showQR(qrData) {
+    const img = document.getElementById('qr-image')
+    const placeholder = document.getElementById('qr-placeholder')
+
+    // Generate QR using API
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}&bgcolor=111111&color=00ff87`
+    img.src = qrUrl
+    img.style.display = 'block'
+    placeholder.style.display = 'none'
+    document.getElementById('qr-text').textContent = 'Scannez ce QR avec WhatsApp → Appareils connectés'
+  }
+
+  // ─── CONFIG ───
+  async function loadConfig() {
+    try {
+      const res = await fetch(`${API_BASE}/bot/config`, {
+        headers: { 'x-api-key': apiKey }
+      })
+      if (!res.ok) return
+      const config = await res.json()
+
+      if (config.welcome_message) document.getElementById('welcome-msg').value = config.welcome_message
+      if (config.offline_message) document.getElementById('offline-msg').value = config.offline_message
+      if (config.ai_context) document.getElementById('ai-context').value = config.ai_context
+
+      aiEnabled = config.ai_enabled || false
+      if (aiEnabled) document.getElementById('ai-toggle').classList.add('on')
+
+      rules = config.rules || []
+      renderRules()
+    } catch(e) {}
+  }
+
+  function toggleAI() {
+    aiEnabled = !aiEnabled
+    const toggle = document.getElementById('ai-toggle')
+    toggle.classList.toggle('on', aiEnabled)
+  }
+
+  function renderRules() {
+    const list = document.getElementById('rules-list')
+    if (rules.length === 0) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">⌀</div><p>Aucune règle configurée</p></div>'
+      return
+    }
+    list.innerHTML = rules.map((r, i) => `
+      <div class="rule-item">
+        <span class="rule-trigger">${r.trigger}</span>
+        <span class="rule-response">${r.response}</span>
+        <span class="rule-delete" onclick="deleteRule(${i})">✕</span>
+      </div>
+    `).join('')
+  }
+
+  function addRule() {
+    const trigger = document.getElementById('new-trigger').value.trim()
+    const response = document.getElementById('new-response').value.trim()
+    if (!trigger || !response) return
+    rules.push({ trigger, response })
+    renderRules()
+    document.getElementById('new-trigger').value = ''
+    document.getElementById('new-response').value = ''
+  }
+
+  function deleteRule(i) {
+    rules.splice(i, 1)
+    renderRules()
+  }
+
+  async function saveConfig() {
+    const config = {
+      welcome_message: document.getElementById('welcome-msg').value,
+      offline_message: document.getElementById('offline-msg').value,
+      ai_enabled: aiEnabled,
+      ai_context: document.getElementById('ai-context').value,
+      rules: rules
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/bot/config`, {
+        method: 'PUT',
+        headers: {
+          'x-api-key': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(config)
+      })
+
+      if (res.ok) {
+        showToast('Configuration sauvegardée ✓')
+      } else {
+        showToast('Erreur lors de la sauvegarde', true)
+      }
+    } catch(e) {
+      showToast('Erreur de connexion', true)
+    }
+  }
+
+  // ─── LOGS ───
+  async function loadLogs() {
+    const body = document.getElementById('logs-body')
+    body.innerHTML = '<div class="empty"><div class="loading"></div><p>Chargement...</p></div>'
+
+    try {
+      const res = await fetch(`${API_BASE}/bot/logs`, {
+        headers: { 'x-api-key': apiKey }
+      })
+      const logs = await res.json()
+
+      if (!logs.length) {
+        body.innerHTML = '<div class="empty"><div class="empty-icon">≡</div><p>Aucun message pour l\'instant</p></div>'
+        return
+      }
+
+      body.innerHTML = logs.map(log => `
+        <div class="log-row">
+          <div class="time">${formatTime(log.created_at)}</div>
+          <div class="contact">${log.contact_jid?.split('@')[0] || '—'}</div>
+          <div class="incoming">${log.incoming || '—'}</div>
+          <div class="outgoing">${log.outgoing || '—'}</div>
+          <div><span class="type-badge ${log.type}">${log.type}</span></div>
+        </div>
+      `).join('')
+    } catch(e) {
+      body.innerHTML = '<div class="empty"><div class="empty-icon">⚠</div><p>Erreur de chargement</p></div>'
+    }
+  }
+
+  // ─── UTILS ───
+  function formatTime(iso) {
+    if (!iso) return '—'
+    const d = new Date(iso)
+    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+  }
+
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast')
+    toast.textContent = msg
+    toast.className = 'toast show' + (isError ? ' error' : '')
+    setTimeout(() => toast.classList.remove('show'), 3000)
+  }
+
+  // ─── AUTO-LOGIN ───
+  window.onload = () => {
+    const saved = localStorage.getItem('wabiz_key')
+    if (saved) {
+      document.getElementById('api-key-input').value = saved
+      login()
+    }
+  }
+
+  // Enter key login
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('api-key-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login()
+    })
+  })
+</script>
+</body>
+</html>
