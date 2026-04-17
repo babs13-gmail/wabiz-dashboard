@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WABIZ — Automatisez votre WhatsApp avec l'IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--g:#25D366;--bg:#0a0a0a;--s:#111;--s2:#161616;--b:#222;--t:#e8e8e8;--m:#888;--sans:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--t);overflow-x:hidden}
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:15px 36px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--b)}
+.nav-logo{font-size:21px;font-weight:800;color:#fff}.nav-logo span{color:var(--g)}
+.nav-r{display:flex;align-items:center;gap:18px}
+.nav-r a{color:var(--m);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}.nav-r a:hover{color:#fff}
+.wa-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);color:var(--g)!important;padding:7px 15px;border-radius:100px;font-size:12px;font-weight:600;text-decoration:none!important}
+.nav-cta{background:var(--g);color:#000!important;padding:9px 20px;border-radius:8px;font-weight:700!important;cursor:pointer;border:none;font-family:var(--sans);font-size:13px}
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:115px 20px 70px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:650px;height:650px;background:radial-gradient(circle,rgba(37,211,102,.07) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);color:var(--g);font-size:12px;font-weight:600;padding:5px 15px;border-radius:100px;margin-bottom:26px;animation:fd .5s ease both}
+.hero h1{font-size:clamp(34px,6vw,66px);font-weight:800;line-height:1.1;letter-spacing:-2px;color:#fff;max-width:750px;margin-bottom:22px;animation:fd .5s .1s ease both}
+.hero h1 em{color:var(--g);font-style:normal}
+.hero p{font-size:17px;color:var(--m);max-width:520px;line-height:1.7;margin-bottom:36px;animation:fd .5s .2s ease both}
+.ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:fd .5s .3s ease both}
+.btn-p{background:var(--g);color:#000;border:none;font-family:var(--sans);font-size:15px;font-weight:700;padding:13px 30px;border-radius:9px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 35px rgba(37,211,102,.3)}
+.btn-s{background:transparent;color:var(--t);border:1px solid var(--b);font-family:var(--sans);font-size:15px;font-weight:600;padding:13px 30px;border-radius:9px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.btn-s:hover{border-color:var(--g);color:var(--g)}
+.hstats{display:flex;gap:36px;margin-top:54px;flex-wrap:wrap;justify-content:center;animation:fd .5s .4s ease both}
+.hs .n{font-size:26px;font-weight:800;color:#fff}.hs .n em{color:var(--g);font-style:normal}
+.hs .l{font-size:12px;color:var(--m);margin-top:3px}
+/* CHAT MOCKUP */
+.chat{margin-top:52px;background:var(--s);border:1px solid var(--b);border-radius:14px;padding:18px;max-width:320px;text-align:left;animation:fu .5s .5s ease both}
+.ch{display:flex;align-items:center;gap:9px;padding-bottom:12px;border-bottom:1px solid var(--b);margin-bottom:12px}
+.av{width:34px;height:34px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+.cn{font-size:12px;font-weight:700;color:#fff}.cs{font-size:10px;color:var(--g)}
+.cm{margin-bottom:7px;display:flex}
+.cm.r{justify-content:flex-start}.cm.s{justify-content:flex-end}
+.cb{padding:8px 12px;border-radius:9px;font-size:11px;max-width:195px;line-height:1.5}
+.cm.r .cb{background:var(--s2);color:var(--t);border-bottom-left-radius:2px}
+.cm.s .cb{background:rgba(37,211,102,.12);color:var(--g);border-bottom-right-radius:2px}
+/* SECTIONS */
+.sec{padding:80px 36px;max-width:1080px;margin:0 auto}
+.sec-b{display:inline-block;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);color:var(--g);font-size:10px;font-weight:700;padding:4px 13px;border-radius:100px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
+.sec-t{font-size:clamp(24px,4vw,40px);font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:12px;line-height:1.2}
+.sec-s{font-size:15px;color:var(--m);max-width:480px;line-height:1.7}
+/* FEAT */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:50px}
+.fc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:24px;transition:all .3s}
+.fc:hover{border-color:rgba(37,211,102,.4);transform:translateY(-3px)}
+.fi{width:44px;height:44px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:13px}
+.fc h3{font-size:14px;font-weight:700;color:#fff;margin-bottom:6px}
+.fc p{font-size:12px;color:var(--m);line-height:1.6}
+/* STEPS */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:18px;margin-top:50px}
+.sc{text-align:center;padding:26px 16px;background:var(--s);border:1px solid var(--b);border-radius:12px}
+.sn{width:42px;height:42px;background:var(--g);color:#000;font-weight:800;font-size:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 13px}
+.sc h3{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px}
+.sc p{font-size:11px;color:var(--m);line-height:1.6}
+/* PRICING */
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:50px}
+.pc{background:var(--s);border:1px solid var(--b);border-radius:13px;padding:28px;position:relative}
+.pc.hot{border-color:var(--g);background:linear-gradient(135deg,#111 0%,#0d1a12 100%)}
+.pc.hot::before{content:'POPULAIRE';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--g);color:#000;font-size:8px;font-weight:800;letter-spacing:2px;padding:3px 11px;border-radius:100px}
+.pn{font-size:12px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px}
+.pa{font-size:38px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:2px}
+.pa span{font-size:16px;color:var(--m)}
+.pp{font-size:11px;color:var(--m);margin-bottom:20px}
+.pf{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.pf li{font-size:12px;color:var(--t);display:flex;align-items:center;gap:8px}
+.pf li::before{content:'✓';color:var(--g);font-weight:700;flex-shrink:0}
+.bpo{width:100%;padding:10px;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--b);background:transparent;color:var(--t);transition:all .2s}
+.bpo:hover{border-color:var(--g);color:var(--g)}
+.bpf{width:100%;padding:10px;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;background:var(--g);color:#000;border:none;transition:opacity .2s}
+.bpf:hover{opacity:.85}
+/* FOOTER */
+footer{border-top:1px solid var(--b);padding:28px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.fl{font-size:17px;font-weight:800;color:#fff}.fl span{color:var(--g)}
+.flinks{display:flex;gap:18px}
+.flinks a{font-size:12px;color:var(--m);text-decoration:none;transition:color .2s}.flinks a:hover{color:var(--g)}
+.fdev{font-size:11px;color:var(--m)}.fdev a{color:var(--g);text-decoration:none;font-weight:600}
+/* MODAL */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center}
+#modal.on{display:flex}
+.mb{background:var(--s);border:1px solid var(--b);border-radius:16px;padding:40px;width:380px;max-width:92vw;position:relative;animation:fu .3s ease both}
+.mb::before{content:'';position:absolute;top:0;left:36px;right:36px;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);border-radius:2px}
+.mc{position:absolute;top:13px;right:16px;font-size:18px;color:var(--m);cursor:pointer;background:none;border:none;transition:color .2s}.mc:hover{color:#fff}
+.ml{font-size:20px;font-weight:800;color:#fff;margin-bottom:2px}.ml span{color:var(--g)}
+.ms{font-size:12px;color:var(--m);margin-bottom:26px}
+.fi2{margin-bottom:13px}
+.fi2 label{display:block;font-size:10px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.fi2 input{width:100%;background:var(--bg);border:1px solid var(--b);color:var(--t);font-family:var(--sans);font-size:13px;padding:11px 14px;border-radius:7px;outline:none;transition:border-color .2s}
+.fi2 input:focus{border-color:var(--g)}
+.fi2 input::placeholder{color:#444}
+.btn-log{width:100%;background:var(--g);color:#000;border:none;font-family:var(--sans);font-size:14px;font-weight:700;padding:12px;border-radius:7px;cursor:pointer;margin-top:5px;transition:opacity .2s}
+.btn-log:hover{opacity:.85}
+.merr{font-size:11px;color:#ff4545;margin-top:9px;display:none;text-align:center}
+.mf{margin-top:16px;padding-top:13px;border-top:1px solid var(--b);font-size:11px;color:var(--m);text-align:center}
+.mf a{color:var(--g);font-weight:600;text-decoration:none}
+/* DASHBOARD */
+.ds{position:fixed;left:0;top:0;bottom:0;width:230px;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;z-index:100}
+.dl{padding:20px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.dl h1{font-size:18px;font-weight:800;color:#fff}.dl h1 span{color:var(--g)}
+.dv{font-size:9px;color:var(--m);background:var(--s2);padding:2px 7px;border-radius:100px;font-family:var(--mono)}
+.dn{flex:1;padding:13px 9px;display:flex;flex-direction:column;gap:3px}
+.dni{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;font-size:13px;font-weight:500;color:var(--m);cursor:pointer;transition:all .2s}
+.dni:hover{background:var(--s2);color:var(--t)}
+.dni.on{background:rgba(37,211,102,.1);color:var(--g);font-weight:600}
+.dnx{font-size:14px;width:18px;text-align:center}
+.df{padding:13px;border-top:1px solid var(--b)}
+.dst{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--m);margin-bottom:8px}
+.dd{width:7px;height:7px;border-radius:50%;background:#ff4545;flex-shrink:0}
+.dd.on{background:var(--g);box-shadow:0 0 7px rgba(37,211,102,.6);animation:pulse 2s infinite}
+.bout{width:100%;background:transparent;border:1px solid var(--b);color:var(--m);font-family:var(--sans);font-size:11px;padding:7px;border-radius:5px;cursor:pointer;transition:all .2s}
+.bout:hover{border-color:#ff4545;color:#ff4545}
+.dm{margin-left:230px;min-height:100vh;padding:28px;background:var(--bg)}
+.dp{display:none;animation:fu .3s ease both}
+.dp.on{display:block}
+.dph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px}
+.dpt{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.dps{font-size:11px;color:var(--m);margin-top:3px}
+.sr{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:13px;margin-bottom:24px}
+.sb{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:17px;transition:border-color .3s}
+.sb:hover{border-color:rgba(37,211,102,.3)}
+.sb .l{font-size:9px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.sb .v{font-size:26px;font-weight:800;color:#fff}
+.sb .v.g{color:var(--g)}.sb .v.r{color:#ff4545}
+.sb .c{font-size:10px;color:var(--m);margin-top:3px}
+.bc{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:13px;margin-bottom:20px}
+.bi h3{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
+.bi p{font-size:11px;color:var(--m)}
+.bb{display:flex;gap:8px}
+.bst{background:var(--g);color:#000;border:none;font-family:var(--sans);font-size:11px;font-weight:700;padding:9px 17px;border-radius:7px;cursor:pointer;transition:all .2s}
+.bst:hover{opacity:.85}
+.bsp{background:transparent;color:#ff4545;border:1px solid #ff4545;font-family:var(--sans);font-size:11px;font-weight:700;padding:9px 17px;border-radius:7px;cursor:pointer;transition:all .2s}
+.bsp:hover{background:#ff4545;color:#fff}
+/* CONNECTION */
+.cl{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.cc{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:24px}
+.cc h3{font-size:13px;font-weight:700;color:#fff;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--b)}
+.qrb{width:185px;height:185px;background:var(--s2);border:2px dashed var(--b);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:42px;transition:border-color .3s}
+.qrb.live{border-color:var(--g);border-style:solid}
+#qr-img{width:185px;height:185px;border-radius:10px;display:none}
+.qr-status{font-size:11px;color:var(--m);text-align:center;margin-bottom:13px}
+.pd{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:20px;text-align:center;margin-bottom:13px}
+.pc2{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--g);letter-spacing:5px;margin-bottom:5px}
+.psb{font-size:10px;color:var(--m)}
+.pf2{display:flex;gap:7px;margin-bottom:11px}
+.pf2 input{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);font-family:var(--sans);font-size:12px;padding:9px 12px;border-radius:7px;outline:none;transition:border-color .2s}
+.pf2 input:focus{border-color:var(--g)}
+.pf2 input::placeholder{color:#444}
+.bpr{background:var(--g);color:#000;border:none;font-family:var(--sans);font-size:11px;font-weight:700;padding:9px 14px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.bpr:hover{opacity:.85}
+.sl{display:flex;flex-direction:column;gap:12px}
+.si{display:flex;gap:11px;align-items:flex-start}
+.sin{width:24px;height:24px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);color:var(--g);font-size:11px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.si h4{font-size:11px;font-weight:600;color:#fff;margin-bottom:2px}
+.si p{font-size:10px;color:var(--m);line-height:1.5}
+/* CONFIG */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ccc{background:var(--s);border:1px solid var(--b);border-radius:11px;padding:20px}
+.ccc h3{font-size:13px;font-weight:700;color:#fff;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--b)}
+.fg2{margin-bottom:14px}
+.fg2 label{display:block;font-size:9px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.fg2 input,.fg2 textarea{width:100%;background:var(--bg);border:1px solid var(--b);color:var(--t);font-family:var(--sans);font-size:12px;padding:9px 12px;border-radius:7px;outline:none;transition:border-color .2s;resize:vertical}
+.fg2 input:focus,.fg2 textarea:focus{border-color:var(--g)}
+.fg2 input::placeholder,.fg2 textarea::placeholder{color:#444}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--b)}
+.tr:last-child{border-bottom:none}
+.tl{font-size:12px;font-weight:600;color:var(--t)}
+.ts{font-size:10px;color:var(--m);margin-top:2px}
+.tg{width:38px;height:21px;background:var(--b);border-radius:11px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}
+.tg.on{background:var(--g)}
+.tg::after{content:'';position:absolute;width:15px;height:15px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tg.on::after{transform:translateX(17px)}
+.rl{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;margin-bottom:10px}
+.ri{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--b);border-radius:6px;padding:8px 12px}
+.rt{font-size:10px;font-weight:600;color:var(--g);font-family:var(--mono);min-width:70px;flex-shrink:0}
+.rr{font-size:10px;color:var(--m);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rd{color:#444;cursor:pointer;font-size:12px;flex-shrink:0;background:none;border:none;transition:color .2s}
+.rd:hover{color:#ff4545}
+.ar{display:grid;grid-template-columns:1fr 2fr auto;gap:6px}
+.ar input{background:var(--bg);border:1px solid var(--b);color:var(--t);font-family:var(--sans);font-size:11px;padding:8px 10px;border-radius:6px;outline:none;transition:border-color .2s}
+.ar input:focus{border-color:var(--g)}
+.ar input::placeholder{color:#444}
+.bad{background:var(--g);color:#000;border:none;font-size:16px;font-weight:700;padding:0 13px;border-radius:6px;cursor:pointer;transition:opacity .2s}
+.bad:hover{opacity:.85}
+.bsv{background:var(--g);color:#000;border:none;font-family:var(--sans);font-size:12px;font-weight:700;padding:10px 20px;border-radius:7px;cursor:pointer;transition:all .2s}
+.bsv:hover{opacity:.85}
+.brf{background:transparent;border:1px solid var(--b);color:var(--m);font-family:var(--sans);font-size:11px;padding:9px 15px;border-radius:7px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px}
+.brf:hover{border-color:var(--g);color:var(--g)}
+/* LOGS */
+.lw{background:var(--s);border:1px solid var(--b);border-radius:11px;overflow:hidden}
+.lh{display:grid;grid-template-columns:105px 100px 1fr 1fr 70px;padding:10px 16px;border-bottom:1px solid var(--b);font-size:9px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:1px}
+.lr{display:grid;grid-template-columns:105px 100px 1fr 1fr 70px;padding:12px 16px;border-bottom:1px solid var(--b);font-size:11px;transition:background .2s}
+.lr:hover{background:var(--s2)}.lr:last-child{border-bottom:none}
+.lt{color:var(--m);font-family:var(--mono);font-size:10px}
+.lc{color:#60a5fa;font-family:var(--mono);font-size:10px}
+.li{color:var(--m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px}
+.lo{color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px}
+.bx{display:inline-block;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:100px}
+.bx.rule{background:rgba(37,211,102,.1);color:var(--g)}
+.bx.ai{background:rgba(96,165,250,.1);color:#60a5fa}
+.bx.welcome{background:rgba(251,191,36,.1);color:#fbbf24}
+.empty{text-align:center;padding:40px 20px;color:var(--m)}
+.empty .ico{font-size:32px;margin-bottom:10px;opacity:.3}
+.empty p{font-size:12px}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s);border:1px solid var(--b);border-left:3px solid var(--g);padding:12px 16px;border-radius:8px;font-size:12px;color:var(--t);z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;max-width:260px;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.toast.on{opacity:1;transform:translateY(0)}
+.toast.err{border-left-color:#ff4545}
+/* QR TIMER */
+.qr-timer{font-size:10px;color:#fbbf24;text-align:center;margin-top:6px;display:none}
+@keyframes fd{from{opacity:0;transform:translateY(-13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--b);border-radius:2px}
+@media(max-width:768px){.nav{padding:12px 16px}.nav-r a:not(.wa-btn):not(.nav-cta){display:none}.hero{padding:90px 16px 50px}.sec{padding:50px 16px}.cl,.cg{grid-template-columns:1fr}footer{padding:20px 16px;flex-direction:column;text-align:center}.ds{width:54px}.dl h1,.dv,.dni span,.df .dst span,.bout{display:none}.dni{padding:11px;justify-content:center}.dm{margin-left:54px;padding:16px}.sr{grid-template-columns:1fr 1fr}.lh,.lr{grid-template-columns:1fr 1fr}.lh>*:nth-child(n+3),.lr>*:nth-child(n+3){display:none}}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+<nav class="nav">
+  <div class="nav-logo">WA<span>BIZ</span></div>
+  <div class="nav-r">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#pricing">Tarifs</a>
+    <a href="https://whatsapp.com/channel/0029Vb4OlkEEFeXcXryLHE0L" target="_blank" class="wa-btn">📣 Rejoindre Mr.B</a>
+    <button class="nav-cta" onclick="openModal()">Accéder →</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="badge">🤖 Propulsé par Groq · Llama 3.3 70B</div>
+  <h1>Automatisez votre<br>WhatsApp <em>avec l'IA</em></h1>
+  <p>Répondez à vos clients 24h/24 automatiquement. Configurez votre bot en quelques minutes, sans compétences techniques.</p>
+  <div class="ctas">
+    <button class="btn-p" onclick="openModal()">🚀 Commencer maintenant</button>
+    <a href="#features" class="btn-s">Voir comment ça marche →</a>
+  </div>
+  <div class="hstats">
+    <div class="hs"><div class="n"><em>24</em>/7</div><div class="l">Disponible</div></div>
+    <div class="hs"><div class="n"><em>10s</em></div><div class="l">Temps de réponse</div></div>
+    <div class="hs"><div class="n"><em>∞</em></div><div class="l">Conversations</div></div>
+    <div class="hs"><div class="n"><em>0</em></div><div class="l">Code requis</div></div>
+  </div>
+  <div class="chat">
+    <div class="ch"><div class="av">🤖</div><div><div class="cn">Bot WABIZ</div><div class="cs">● En ligne</div></div></div>
+    <div class="cm r"><div class="cb">Bonjour, c'est quoi votre prix ?</div></div>
+    <div class="cm s"><div class="cb">Bonjour 😊 Notre offre starter est à 15$/mois. Souhaitez-vous plus d'infos ?</div></div>
+    <div class="cm r"><div class="cb">Oui parfait merci !</div></div>
+    <div class="cm s"><div class="cb">Je vous envoie tous les détails 🚀</div></div>
+  </div>
+</section>
+
+<section class="sec" id="features">
+  <div class="sec-b">Fonctionnalités</div>
+  <h2 class="sec-t">Tout ce dont vous avez besoin</h2>
+  <p class="sec-s">Des outils puissants pour gérer vos conversations WhatsApp sans effort.</p>
+  <div class="fg">
+    <div class="fc"><div class="fi">⚡</div><h3>Réponses instantanées</h3><p>Vos clients reçoivent une réponse en moins de 10 secondes, 24h/24 et 7j/7.</p></div>
+    <div class="fc"><div class="fi">🧠</div><h3>IA Groq intégrée</h3><p>Propulsé par Llama 3.3 70B via Groq. Des réponses naturelles et intelligentes.</p></div>
+    <div class="fc"><div class="fi">📋</div><h3>Règles automatiques</h3><p>Créez des règles personnalisées : mot-clé → réponse. Simple, rapide, efficace.</p></div>
+    <div class="fc"><div class="fi">📊</div><h3>Tableau de bord</h3><p>Suivez toutes vos conversations et statistiques en temps réel.</p></div>
+    <div class="fc"><div class="fi">🔐</div><h3>Connexion sécurisée</h3><p>Connexion via QR code ou code de jumelage. Vos données restent privées.</p></div>
+    <div class="fc"><div class="fi">🌍</div><h3>Multi-langues</h3><p>Configurez votre bot en français, anglais, wolof ou n'importe quelle langue.</p></div>
+  </div>
+</section>
+
+<section class="sec" style="background:var(--s);border-radius:18px;max-width:1080px;margin:0 auto">
+  <div class="sec-b">Comment ça marche</div>
+  <h2 class="sec-t">En 4 étapes simples</h2>
+  <p class="sec-s">Lancez votre bot WhatsApp en moins de 5 minutes.</p>
+  <div class="sg">
+    <div class="sc"><div class="sn">1</div><h3>Créez votre compte</h3><p>Accédez au dashboard avec votre clé API après inscription.</p></div>
+    <div class="sc"><div class="sn">2</div><h3>Configurez votre bot</h3><p>Définissez vos messages, règles et activez l'IA.</p></div>
+    <div class="sc"><div class="sn">3</div><h3>Connectez WhatsApp</h3><p>Scannez le QR code ou utilisez le code de jumelage.</p></div>
+    <div class="sc"><div class="sn">4</div><h3>C'est parti !</h3><p>Votre bot répond automatiquement 24h/24.</p></div>
+  </div>
+</section>
+
+<section class="sec" id="pricing">
+  <div class="sec-b">Tarifs</div>
+  <h2 class="sec-t">Des prix accessibles pour tous</h2>
+  <p class="sec-s">Commencez et évoluez selon vos besoins.</p>
+  <div class="pg">
+    <div class="pc"><div class="pn">Starter</div><div class="pa">15<span>$</span></div><div class="pp">par mois</div><ul class="pf"><li>1 numéro WhatsApp</li><li>Règles illimitées</li><li>500 messages/mois</li><li>Dashboard complet</li><li>Support email</li></ul><button class="bpo" onclick="openModal()">Commencer</button></div>
+    <div class="pc hot"><div class="pn">Pro</div><div class="pa">35<span>$</span></div><div class="pp">par mois</div><ul class="pf"><li>3 numéros WhatsApp</li><li>IA Groq activée</li><li>Messages illimités</li><li>Support prioritaire</li><li>Personnalisation IA</li></ul><button class="bpf" onclick="openModal()">Commencer</button></div>
+    <div class="pc"><div class="pn">Business</div><div class="pa">80<span>$</span></div><div class="pp">par mois</div><ul class="pf"><li>10 numéros WhatsApp</li><li>IA multi-contexte</li><li>Messages illimités</li><li>API dédiée</li><li>Support WhatsApp direct</li></ul><button class="bpo" onclick="openModal()">Nous contacter</button></div>
+  </div>
+</section>
+
+<footer>
+  <div class="fl">WA<span>BIZ</span></div>
+  <div class="flinks"><a href="#features">Fonctionnalités</a><a href="#pricing">Tarifs</a><a href="https://whatsapp.com/channel/0029Vb4OlkEEFeXcXryLHE0L" target="_blank">📣 Chaîne WhatsApp</a></div>
+  <div class="fdev">Développé par <a href="https://whatsapp.com/channel/0029Vb4OlkEEFeXcXryLHE0L" target="_blank">Mr.B TECH</a> 🔱</div>
+</footer>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="modal">
+  <div class="mb">
+    <button class="mc" onclick="closeModal()">✕</button>
+    <div class="ml">WA<span>BIZ</span></div>
+    <div class="ms">Entrez votre clé API pour accéder au dashboard</div>
+    <div class="fi2"><label>Clé API</label><input type="password" id="ki" placeholder="wabiz_sk_••••••••••••"/></div>
+    <button class="btn-log" onclick="login()">Accéder au Dashboard →</button>
+    <div class="merr" id="merr">❌ Clé API invalide. Vérifiez vos accès.</div>
+    <div class="mf">Pas encore client ? <a href="https://whatsapp.com/channel/0029Vb4OlkEEFeXcXryLHE0L" target="_blank">Contactez Mr.B TECH</a></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app" style="display:none">
+<aside class="ds">
+  <div class="dl"><h1>WA<span>BIZ</span></h1><span class="dv">v1.0</span></div>
+  <nav class="dn">
+    <div class="dni on" onclick="goPage('ov',this)"><span class="dnx">◈</span><span>Vue d'ensemble</span></div>
+    <div class="dni" onclick="goPage('cn',this)"><span class="dnx">📱</span><span>Connexion</span></div>
+    <div class="dni" onclick="goPage('cf',this)"><span class="dnx">⚙️</span><span>Configuration</span></div>
+    <div class="dni" onclick="goPage('lg',this)"><span class="dnx">📋</span><span>Journaux</span></div>
+  </nav>
+  <div class="df">
+    <div class="dst"><div class="dd" id="dd"></div><span id="dstxt">Hors ligne</span></div>
+    <button class="bout" onclick="logout()">← Déconnexion</button>
+  </div>
+</aside>
+
+<main class="dm">
+
+  <!-- OVERVIEW -->
+  <div class="dp on" id="pg-ov">
+    <div class="dph">
+      <div><div class="dpt">Vue d'ensemble</div><div class="dps">Tableau de bord principal</div></div>
+      <button class="brf" onclick="refresh()">↻ Actualiser</button>
+    </div>
+    <div class="sr">
+      <div class="sb"><div class="l">Statut</div><div class="v r" id="sv">Hors ligne</div><div class="c">Connexion WhatsApp</div></div>
+      <div class="sb"><div class="l">Messages reçus</div><div class="v" id="srv">0</div><div class="c">Total tous types</div></div>
+      <div class="sb"><div class="l">Réponses auto</div><div class="v g" id="sau">0</div><div class="c">Règles déclenchées</div></div>
+      <div class="sb"><div class="l">Réponses IA</div><div class="v" id="sai">0</div><div class="c">Générations Groq</div></div>
+    </div>
+    <div class="bc">
+      <div class="bi"><h3>🤖 WhatsApp Bot</h3><p id="btxt">Vérification...</p></div>
+      <div class="bb">
+        <button class="bst" onclick="startBot()">▶ Démarrer</button>
+        <button class="bsp" onclick="stopBot()">■ Arrêter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONNECTION -->
+  <div class="dp" id="pg-cn">
+    <div class="dph"><div><div class="dpt">Connexion WhatsApp</div><div class="dps">Connectez votre numéro</div></div></div>
+    <div class="cl">
+      <div class="cc">
+        <h3>📷 QR Code</h3>
+        <div class="qrb" id="qrb">📱</div>
+        <img id="qr-img" alt="QR"/>
+        <div class="qr-status" id="qrst">Démarrez le bot pour générer un QR code</div>
+        <div class="qr-timer" id="qrtimer">⏱ QR expire dans <span id="qrcnt">60</span>s</div>
+        <button class="bsv" style="width:100%;margin-top:10px" onclick="checkQR()">↻ Vérifier le QR</button>
+      </div>
+      <div class="cc">
+        <h3>🔢 Code de jumelage</h3>
+        <div class="pd">
+          <div class="pc2" id="pcode">— — — —</div>
+          <div class="psb">Entrez ce code dans WhatsApp</div>
+        </div>
+        <div class="pf2">
+          <input type="tel" id="ph" placeholder="+221 77 000 00 00"/>
+          <button class="bpr" onclick="getPair()">Obtenir</button>
+        </div>
+        <p style="font-size:10px;color:var(--m);margin-bottom:16px">Entrez votre numéro avec l'indicatif pays ex: +221...</p>
+        <div class="sl">
+          <div class="si"><div class="sin">1</div><div><h4>Démarrez le bot</h4><p>Cliquez "Démarrer" dans Vue d'ensemble</p></div></div>
+          <div class="si"><div class="sin">2</div><div><h4>Entrez votre numéro</h4><p>Saisissez le numéro avec +indicatif</p></div></div>
+          <div class="si"><div class="sin">3</div><div><h4>Ouvrez WhatsApp</h4><p>Menu → Appareils connectés → Code de connexion</p></div></div>
+          <div class="si"><div class="sin">4</div><div><h4>Entrez le code affiché</h4><p>Saisissez le code à 8 chiffres ci-dessus</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="dp" id="pg-cf">
+    <div class="dph">
+      <div><div class="dpt">Configuration</div><div class="dps">Paramètres de votre bot</div></div>
+      <button class="bsv" onclick="saveConf()">💾 Sauvegarder</button>
+    </div>
+    <div class="cg">
+      <div class="ccc">
+        <h3>💬 Messages automatiques</h3>
+        <div class="fg2"><label>Message de bienvenue</label><textarea id="wmsg" rows="4" placeholder="Bonjour ! Comment puis-je vous aider ?"></textarea></div>
+        <div class="fg2"><label>Message hors ligne</label><textarea id="omsg" rows="3" placeholder="Nous sommes indisponibles..."></textarea></div>
+      </div>
+      <div class="ccc">
+        <h3>🧠 Intelligence artificielle</h3>
+        <div class="tr"><div><div class="tl">Activer l'IA</div><div class="ts">Réponses Groq / Llama 3.3 70B</div></div><div class="tg" id="aitg" onclick="toggleAI()"></div></div>
+        <div class="fg2" style="margin-top:14px"><label>Contexte / Personnalité</label><textarea id="aictx" rows="6" placeholder="Tu es un assistant professionnel pour [entreprise]..."></textarea></div>
+      </div>
+      <div class="ccc" style="grid-column:1/-1">
+        <h3>⚡ Règles de réponse automatique</h3>
+        <div class="rl" id="rl"><div class="empty"><div class="ico">⌀</div><p>Aucune règle configurée</p></div></div>
+        <div class="ar">
+          <input type="text" id="rtrig" placeholder="Déclencheur"/>
+          <input type="text" id="rresp" placeholder="Réponse automatique"/>
+          <button class="bad" onclick="addRule()">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="dp" id="pg-lg">
+    <div class="dph">
+      <div><div class="dpt">Journaux</div><div class="dps">Historique des conversations</div></div>
+      <button class="brf" onclick="loadLogs()">↻ Actualiser</button>
+    </div>
+    <div class="lw">
+      <div class="lh"><div>Heure</div><div>Contact</div><div>Message reçu</div><div>Réponse</div><div>Type</div></div>
+      <div id="lb"><div class="empty"><div class="ico">📋</div><p>Aucun message pour l'instant</p></div></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://wabiz-whatsapp-saas-mvp-production.up.railway.app'
+let key='',aiOn=false,rules=[],qrPoll=null,qrTimer=null,qrCountdown=60
+
+function openModal(){document.getElementById('modal').classList.add('on');setTimeout(()=>document.getElementById('ki').focus(),100)}
+function closeModal(){document.getElementById('modal').classList.remove('on')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal()})
+
+async function login(){
+  const k=document.getElementById('ki').value.trim()
+  if(!k)return
+  const btn=document.querySelector('.btn-log')
+  btn.textContent='Connexion...'
+  try{
+    const r=await fetch(`${API}/auth?key=${enc(k)}`)
+    if(r.ok){
+      key=k;localStorage.setItem('wk',k)
+      document.getElementById('landing').style.display='none'
+      closeModal()
+      document.getElementById('app').style.display='block'
+      initDash()
+    }else{document.getElementById('merr').style.display='block'}
+  }catch(e){document.getElementById('merr').style.display='block'}
+  btn.textContent='Accéder au Dashboard →'
+}
+
+function logout(){
+  clearInterval(qrPoll);clearInterval(qrTimer)
+  localStorage.removeItem('wk');key=''
+  document.getElementById('app').style.display='none'
+  document.getElementById('landing').style.display='block'
+}
+
+async function initDash(){await refresh();await loadConf();await loadLogs()}
+
+function goPage(id,el){
+  document.querySelectorAll('.dp').forEach(p=>p.classList.remove('on'))
+  document.querySelectorAll('.dni').forEach(n=>n.classList.remove('on'))
+  document.getElementById('pg-'+id).classList.add('on')
+  if(el)el.classList.add('on')
+  if(id==='lg')loadLogs()
+  if(id==='cn'){checkQR();startQRPoll()}
+  else{stopQRPoll()}
+}
+
+// ── STATUS ──
+async function refresh(){
+  try{
+    const r=await fetch(`${API}/bot/status?key=${enc(key)}`)
+    if(!r.ok)return
+    const d=await r.json()
+    setStatus(d.status)
+    if(d.qr_code)renderQR(d.qr_code)
+    else if(d.status==='connected'){clearQR('✅ Bot connecté !')}
+  }catch(e){setStatus('offline')}
+  await loadStats()
+}
+
+function setStatus(s){
+  const dot=document.getElementById('dd'),stxt=document.getElementById('dstxt')
+  const sv=document.getElementById('sv'),bt=document.getElementById('btxt')
+  const lb={connected:'En ligne',connecting:'Connexion...',awaiting_scan:'Scan requis',offline:'Hors ligne',disconnected:'Déconnecté'}
+  const l=lb[s]||s
+  if(s==='connected'){dot.classList.add('on');sv.textContent='En ligne';sv.className='v g'}
+  else{dot.classList.remove('on');sv.textContent=l;sv.className='v r'}
+  stxt.textContent=l;bt.textContent='Statut : '+l
+}
+
+async function loadStats(){
+  try{
+    const r=await fetch(`${API}/bot/logs?key=${enc(key)}`)
+    const logs=await r.json()
+    document.getElementById('srv').textContent=logs.length
+    document.getElementById('sau').textContent=logs.filter(l=>l.type==='rule').length
+    document.getElementById('sai').textContent=logs.filter(l=>l.type==='ai').length
+  }catch(e){}
+}
+
+// ── BOT CONTROL ──
+async function startBot(){
+  toast('Démarrage du bot...')
+  try{
+    const r=await fetch(`${API}/bot/start?key=${enc(key)}`,{method:'POST'})
+    const d=await r.json()
+    toast('Bot : '+d.status)
+    // Start polling QR automatically
+    startQRPoll()
+    setTimeout(refresh,2000)
+  }catch(e){toast('Erreur de connexion',1)}
+}
+
+async function stopBot(){
+  stopQRPoll()
+  try{
+    await fetch(`${API}/bot/stop?key=${enc(key)}`,{method:'POST'})
+    toast('Bot arrêté')
+    clearQR('Bot arrêté')
+    setTimeout(refresh,1000)
+  }catch(e){toast('Erreur',1)}
+}
+
+// ── QR POLLING (auto refresh every 3s) ──
+function startQRPoll(){
+  stopQRPoll()
+  qrPoll=setInterval(async()=>{
+    try{
+      const r=await fetch(`${API}/bot/status?key=${enc(key)}`)
+      if(!r.ok)return
+      const d=await r.json()
+      setStatus(d.status)
+      if(d.qr_code){renderQR(d.qr_code)}
+      else if(d.status==='connected'){
+        clearQR('✅ Bot connecté !')
+        stopQRPoll()
+        toast('✅ WhatsApp connecté avec succès !')
+        refresh()
+      }
+    }catch(e){}
+  },3000)
+}
+
+function stopQRPoll(){
+  if(qrPoll){clearInterval(qrPoll);qrPoll=null}
+  if(qrTimer){clearInterval(qrTimer);qrTimer=null}
+  document.getElementById('qrtimer').style.display='none'
+}
+
+function renderQR(qrData){
+  const img=document.getElementById('qr-img'),box=document.getElementById('qrb')
+  const url=`https://api.qrserver.com/v1/create-qr-code/?size=185x185&data=${encodeURIComponent(qrData)}&bgcolor=111111&color=25D366&margin=5`
+  img.src=url
+  img.style.display='block'
+  box.style.display='none'
+  box.classList.add('live')
+  document.getElementById('qrst').textContent='Scannez avec WhatsApp → Appareils connectés'
+  // Start countdown timer
+  startQRCountdown()
+}
+
+function startQRCountdown(){
+  if(qrTimer)clearInterval(qrTimer)
+  qrCountdown=60
+  const timerEl=document.getElementById('qrtimer')
+  const cntEl=document.getElementById('qrcnt')
+  timerEl.style.display='block'
+  cntEl.textContent=qrCountdown
+  qrTimer=setInterval(()=>{
+    qrCountdown--
+    cntEl.textContent=qrCountdown
+    if(qrCountdown<=0){
+      clearInterval(qrTimer)
+      timerEl.style.display='none'
+      document.getElementById('qrst').textContent='QR expiré — cliquez Vérifier pour en générer un nouveau'
+    }
+  },1000)
+}
+
+function clearQR(msg){
+  document.getElementById('qr-img').style.display='none'
+  document.getElementById('qrb').style.display='flex'
+  document.getElementById('qrb').classList.remove('live')
+  document.getElementById('qrst').textContent=msg||'Aucun QR disponible'
+  document.getElementById('qrtimer').style.display='none'
+}
+
+async function checkQR(){
+  await refresh()
+  startQRPoll()
+}
+
+// ── PAIRING CODE ──
+async function getPair(){
+  const phone=document.getElementById('ph').value.trim()
+  if(!phone){toast('Entrez votre numéro',1);return}
+  toast('Génération du code...')
+  try{
+    const r=await fetch(`${API}/bot/pair?key=${enc(key)}&phone=${enc(phone)}`,{method:'POST'})
+    const d=await r.json()
+    if(d.code){document.getElementById('pcode').textContent=d.code;toast('Code généré ! Entrez-le dans WhatsApp')}
+    else toast(d.error||'Démarrez le bot d\'abord',1)
+  }catch(e){toast('Erreur — démarrez le bot d\'abord',1)}
+}
+
+// ── CONFIG ──
+async function loadConf(){
+  try{
+    const r=await fetch(`${API}/bot/config?key=${enc(key)}`)
+    if(!r.ok)return
+    const c=await r.json()
+    if(c.welcome_message)document.getElementById('wmsg').value=c.welcome_message
+    if(c.offline_message)document.getElementById('omsg').value=c.offline_message
+    if(c.ai_context)document.getElementById('aictx').value=c.ai_context
+    aiOn=c.ai_enabled||false
+    if(aiOn)document.getElementById('aitg').classList.add('on')
+    rules=c.rules||[];renderRules()
+  }catch(e){}
+}
+
+function toggleAI(){aiOn=!aiOn;document.getElementById('aitg').classList.toggle('on',aiOn)}
+
+function renderRules(){
+  const l=document.getElementById('rl')
+  if(!rules.length){l.innerHTML='<div class="empty"><div class="ico">⌀</div><p>Aucune règle configurée</p></div>';return}
+  l.innerHTML=rules.map((r,i)=>`<div class="ri"><span class="rt">${r.trigger}</span><span class="rr">${r.response}</span><button class="rd" onclick="delRule(${i})">✕</button></div>`).join('')
+}
+
+function addRule(){
+  const t=document.getElementById('rtrig').value.trim(),r=document.getElementById('rresp').value.trim()
+  if(!t||!r)return;rules.push({trigger:t,response:r});renderRules()
+  document.getElementById('rtrig').value='';document.getElementById('rresp').value=''
+}
+
+function delRule(i){rules.splice(i,1);renderRules()}
+
+async function saveConf(){
+  try{
+    const r=await fetch(`${API}/bot/config?key=${enc(key)}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({welcome_message:document.getElementById('wmsg').value,offline_message:document.getElementById('omsg').value,ai_enabled:aiOn,ai_context:document.getElementById('aictx').value,rules})
+    })
+    if(r.ok)toast('✅ Configuration sauvegardée !');else toast('Erreur',1)
+  }catch(e){toast('Erreur de connexion',1)}
+}
+
+// ── LOGS ──
+async function loadLogs(){
+  const b=document.getElementById('lb')
+  b.innerHTML='<div class="empty"><p>Chargement...</p></div>'
+  try{
+    const r=await fetch(`${API}/bot/logs?key=${enc(key)}`)
+    const logs=await r.json()
+    if(!logs.length){b.innerHTML='<div class="empty"><div class="ico">📋</div><p>Aucun message pour l\'instant</p></div>';return}
+    b.innerHTML=logs.map(l=>`<div class="lr"><div class="lt">${fmt(l.created_at)}</div><div class="lc">${(l.contact_jid||'').split('@')[0]||'—'}</div><div class="li">${esc(l.incoming||'—')}</div><div class="lo">${esc(l.outgoing||'—')}</div><div><span class="bx ${l.type}">${l.type}</span></div></div>`).join('')
+  }catch(e){b.innerHTML='<div class="empty"><p>Erreur de chargement</p></div>'}
+}
+
+// ── UTILS ──
+function enc(s){return encodeURIComponent(s)}
+function esc(s){return s.replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmt(iso){if(!iso)return'—';return new Date(iso).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function toast(msg,err=0){const t=document.getElementById('toast');t.textContent=msg;t.className='toast on'+(err?' err':'');setTimeout(()=>t.classList.remove('on'),3000)}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('modal').classList.contains('on'))login()})
+
+window.onload=()=>{
+  const s=localStorage.getItem('wk')
+  if(s){key=s;document.getElementById('landing').style.display='none';document.getElementById('app').style.display='block';initDash()}
+}
+</script>
+</body>
+</html>
